@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "raceId": 1,
+    "horse": "サンプル馬A",
+    "odds": 3.5,
+    "popularity": 1
+  },
+  {
+    "id": 2,
+    "raceId": 1,
+    "horse": "サンプル馬B",
+    "odds": 5.8,
+    "popularity": 2
+  },
+  {
+    "id": 3,
+    "raceId": 1,
+    "horse": "サンプル馬C",
+    "odds": 12.4,
+    "popularity": 5
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "raceName": "皐月賞",
+    "course": "中山",
+    "date": "2026-04-17",
+    "time": "15:40",
+    "status": "before",
+    "notifyTimes": ["15:30", "15:35"],
+    "prediction": {
+      "honmei": "クロワデュノール",
+      "taiko": "サトノシャイニング",
+      "tanana": "エリキング",
+      "comment": "中山2000m実績と安定感を評価。先行力と持続力を重視。"
+    },
+    "result": {
+      "first": "",
+      "second": "",
+      "third": "",
+      "hit": false
+    }
+  },
+  {
+    "id": 2,
+    "raceName": "天皇賞（春）",
+    "course": "京都",
+    "date": "2026-04-17",
+    "time": "16:10",
+    "status": "before",
+    "notifyTimes": ["16:00", "16:05"],
+    "prediction": {
+      "honmei": "ドゥレッツァ",
+      "taiko": "テーオーロイヤル",
+      "tanana": "ブローザホーン",
+      "comment": "長距離適性と持久力を重視。京都の外回りでも安定感を期待。"
+    },
+    "result": {
+      "first": "",
+      "second": "",
+      "third": "",
+      "hit": false
+    }
+  },
+  {
+    "id": 3,
+    "raceName": "NHKマイルカップ",
+    "course": "東京",
+    "date": "2026-04-18",
+    "time": "15:40",
+    "status": "before",
+    "notifyTimes": ["15:30", "15:35"],
+    "prediction": {
+      "honmei": "ジャンタルマンタル",
+      "taiko": "アスコリピチェーノ",
+      "tanana": "ボンドガール",
+      "comment": "東京マイル適性と瞬発力を重視。展開次第で差し脚が生きる想定。"
+    },
+    "result": {
+      "first": "",
+      "second": "",
+      "third": "",
+      "hit": false
+    }
+  },
+  {
+    "id": 4,
+    "raceName": "大阪杯",
+    "course": "阪神",
+    "date": "2026-04-17",
+    "time": "14:50",
+    "status": "finished",
+    "notifyTimes": ["14:40", "14:45"],
+    "prediction": {
+      "honmei": "ベラジオオペラ",
+      "taiko": "ローシャムパーク",
+      "tanana": "タスティエーラ",
+      "comment": "先行力とコース適性を重視。"
+    },
+    "result": {
+      "first": "ベラジオオペラ",
+      "second": "ローシャムパーク",
+      "third": "タスティエーラ",
+      "hit": true
+    }
+  }
+]
