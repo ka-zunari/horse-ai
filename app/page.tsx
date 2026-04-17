@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import races from "../data/races.json";
 
 type Race = {
@@ -45,11 +45,7 @@ function getStoredRaces(): Race[] {
 
 export default function Home() {
   const baseRaces = races as Race[];
-  const [storedRaces, setStoredRaces] = useState<Race[]>([]);
-
-  useEffect(() => {
-    setStoredRaces(getStoredRaces());
-  }, []);
+  const [storedRaces, setStoredRaces] = useState<Race[]>(() => getStoredRaces());
 
   const raceList = useMemo(() => {
     return [...baseRaces, ...storedRaces].sort((a, b) => a.id - b.id);

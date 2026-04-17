@@ -1,4 +1,15 @@
-export function calculateScore(entry: any) {
+type Entry = {
+  raceId: number;
+  popularity: number;
+  odds: number;
+  horse: string;
+};
+
+type PredictionEntry = Entry & {
+  score: number;
+};
+
+export function calculateScore(entry: Entry) {
   const popularityScore = 10 - entry.popularity;
   const oddsScore = 10 / entry.odds;
 
@@ -12,7 +23,10 @@ export function getMark(rank: number) {
   return "△";
 }
 
-export function getPredictions(entries: any[], raceId: number) {
+export function getPredictions(
+  entries: Entry[],
+  raceId: number
+): PredictionEntry[] {
   return entries
     .filter((entry) => entry.raceId === raceId)
     .map((entry) => ({

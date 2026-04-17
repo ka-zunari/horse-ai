@@ -1,7 +1,32 @@
 import { calculateRecovery } from "./result";
 import { getPredictions } from "./prediction";
 
-export function calculateSummary(races: any[], entries: any[], results: any[]) {
+type Race = {
+  id: number;
+};
+
+type Entry = {
+  raceId: number;
+  popularity: number;
+  odds: number;
+  horse: string;
+};
+
+type Result = {
+  raceId: number;
+  first: string;
+  winPayout: number;
+};
+
+type PredictionEntry = Entry & {
+  score: number;
+};
+
+export function calculateSummary(
+  races: Race[],
+  entries: Entry[],
+  results: Result[]
+) {
   let totalRaces = 0;
   let hitCount = 0;
   let totalBet = 0;
@@ -9,9 +34,9 @@ export function calculateSummary(races: any[], entries: any[], results: any[]) {
   let totalProfit = 0;
 
   for (const race of races) {
-    const raceEntries = getPredictions(entries, race.id);
+    const raceEntries: PredictionEntry[] = getPredictions(entries, race.id);
     const result = results.find((r) => r.raceId === race.id);
-    const topHorse = raceEntries[0]?.horse;
+    const topHorse = raceEntries.length > 0 ? raceEntries[0].horse : undefined;
 
     if (!result || !topHorse) continue;
 

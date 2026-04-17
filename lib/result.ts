@@ -1,8 +1,13 @@
-export function isWinHit(topHorse: string, result: any) {
+type RaceResult = {
+  first: string;
+  winPayout: number;
+};
+
+export function isWinHit(topHorse: string, result: RaceResult) {
   return topHorse === result.first;
 }
 
-export function calculateRecovery(topHorse: string, result: any) {
+export function calculateRecovery(topHorse: string, result: RaceResult) {
   const betAmount = 100;
 
   if (topHorse === result.first) {
