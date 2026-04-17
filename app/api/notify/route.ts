@@ -14,45 +14,29 @@ type Race = {
     tanana: string;
     comment: string;
   };
-  result: {
-    first: string;
-    second: string;
-    third: string;
-    hit: boolean;
-  };
 };
 
 function getJapanNow() {
   const now = new Date();
 
-  const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
+  const formatter = new Intl.DateTimeFormat("ja-JP", {
     timeZone: "Asia/Tokyo",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  });
-
-  const timeFormatter = new Intl.DateTimeFormat("ja-JP", {
-    timeZone: "Asia/Tokyo",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
   });
 
-  const dateParts = dateFormatter.formatToParts(now);
-  const timeParts = timeFormatter.formatToParts(now);
+  const parts = formatter.formatToParts(now);
 
-  const year = dateParts.find((part) => part.type === "year")?.value ?? "";
-  const month = dateParts.find((part) => part.type === "month")?.value ?? "";
-  const day = dateParts.find((part) => part.type === "day")?.value ?? "";
-
-  const hour = timeParts.find((part) => part.type === "hour")?.value ?? "";
-  const minute = timeParts.find((part) => part.type === "minute")?.value ?? "";
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
 
   return {
-    now,
-    today: `${year}-${month}-${day}`,
-    currentTime: `${hour}:${minute}`,
+    today: `${get("year")}-${get("month")}-${get("day")}`,
+    currentTime: `${get("hour")}:${get("minute")}`,
   };
 }
 
@@ -70,48 +54,69 @@ ${race.raceName}
 ${race.prediction.comment}`;
 }
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const preview = searchParams.get("preview") === "1";
+// ★ここが追加ポイント
+const sentMap = new Set<string>();
 
+function isAlreadySent(key: string) {
+  return sentMap.has(key);
+}
+
+function markAsSent(key: string) {
+  sentMap.add(key);
+}
+
+async function sendLinePushMessage(message: string) {
+  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN!;
+  const to = process.env.LINE_TO_USER_ID!;
+
+  await fetch("https://api.line.me/v2/bot/message/push", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      to,
+      messages: [{ type: "text", text: message }],
+    }),
+  });
+}
+
+export async function GET() {
   const { today, currentTime } = getJapanNow();
+
   const raceList = races as Race[];
 
-  const targetRaces = raceList.filter((race) => {
-    if (race.status !== "before") {
-      return false;
+  const targets = raceList.filter(
+    (r) =>
+      r.status === "before" &&
+      r.date === today &&
+      r.notifyTimes.includes(currentTime)
+  );
+
+  const results = [];
+
+  for (const race of targets) {
+    const key = `${race.id}-${currentTime}`;
+
+    // ★重複防止
+    if (isAlreadySent(key)) {
+      continue;
     }
 
-    if (race.date !== today) {
-      return false;
-    }
+    const message = buildMessage(race);
+    await sendLinePushMessage(message);
 
-    if (preview) {
-      return true;
-    }
+    markAsSent(key);
 
-    return race.notifyTimes.includes(currentTime);
-  });
-
-  const response = {
-    mode: preview ? "preview" : "live",
-    now: {
-      date: today,
-      time: currentTime,
-      timezone: "Asia/Tokyo",
-    },
-    count: targetRaces.length,
-    races: targetRaces.map((race) => ({
+    results.push({
       id: race.id,
-      raceName: race.raceName,
-      course: race.course,
-      date: race.date,
-      time: race.time,
-      notifyTimes: race.notifyTimes,
-      prediction: race.prediction,
-      message: buildMessage(race),
-    })),
-  };
+      sent: true,
+    });
+  }
 
-  return Response.json(response);
+  return Response.json({
+    sent: results.length,
+    time: currentTime,
+  });
 }
