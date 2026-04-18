@@ -5,23 +5,14 @@ import { useMemo, useState } from "react";
 import races from "../data/races.json";
 
 type Race = {
-  id: number;
-  raceName: string;
-  course: string;
+  id: string;
+  date: string;
   time: string;
-  status: "before" | "finished";
-  prediction: {
-    honmei: string;
-    taiko: string;
-    tanana: string;
-    comment: string;
-  };
-  result: {
-    first: string;
-    second: string;
-    third: string;
-    hit: boolean;
-  };
+  course: string;
+  raceNumber: string;
+  raceName: string;
+  horse: string;
+  reason?: string;
 };
 
 const STORAGE_KEY = "custom_races";
@@ -43,15 +34,27 @@ function getStoredRaces(): Race[] {
   }
 }
 
+function getRaceSortValue(race: Race): number {
+  const dateTime = new Date(`${race.date}T${race.time}:00`).getTime();
+
+  if (!Number.isNaN(dateTime)) {
+    return dateTime;
+  }
+
+  return 0;
+}
+
 export default function Home() {
-  const baseRaces = races as Race[];
+  const baseRaces: Race[] = races;
   const [storedRaces, setStoredRaces] = useState<Race[]>(() => getStoredRaces());
 
   const raceList = useMemo(() => {
-    return [...baseRaces, ...storedRaces].sort((a, b) => a.id - b.id);
+    return [...baseRaces, ...storedRaces].sort(
+      (a, b) => getRaceSortValue(a) - getRaceSortValue(b)
+    );
   }, [baseRaces, storedRaces]);
 
-  function handleDeleteRace(id: number) {
+  function handleDeleteRace(id: string) {
     const confirmed = window.confirm("このレースを削除しますか？");
     if (!confirmed) {
       return;
@@ -124,18 +127,12 @@ export default function Home() {
                 {race.raceName}
               </h2>
 
+              <p>開催日: {race.date}</p>
               <p>開催場: {race.course}</p>
+              <p>レース: {race.raceNumber}</p>
               <p>発走時刻: {race.time}</p>
-              <p>本命: ◎ {race.prediction.honmei}</p>
-              <p>状態: {race.status === "before" ? "開催前" : "結果確定"}</p>
-              <p>
-                判定:{" "}
-                {race.status === "finished"
-                  ? race.result.hit
-                    ? "的中"
-                    : "不的中"
-                  : "未確定"}
-              </p>
+              <p>本命: ◎ {race.horse}</p>
+              {race.reason && <p>理由: {race.reason}</p>}
 
               <div
                 style={{
