@@ -7,10 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "import:races": "node scripts/import-races.mjs"
+    "fetch:races": "node scripts/fetch-source-races.mjs",
+    "import:races": "node scripts/import-races.mjs",
+    "sync:races": "npm run fetch:races && npm run import:races"
   },
   "dependencies": {
     "@upstash/redis": "^1.35.3",
+    "dotenv": "^17.4.2",
     "next": "^15.3.8",
     "react": "19.0.0",
     "react-dom": "19.0.0"
@@ -25,5 +28,4 @@
     "tailwindcss": "^4.2.2",
     "typescript": "6.0.3"
   }
-  
 }

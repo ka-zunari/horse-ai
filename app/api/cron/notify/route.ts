@@ -1,17 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getRaces } from "@/lib/races";
-import { pushLineMessage } from "@/lib/line";
+import { Redis } from "@upstash/redis";
 import { parseJstDateTime, isWithinNotificationWindow, formatJst } from "@/lib/race-time";
-import { markNotificationSent } from "@/lib/redis";
+import { pushLineMessage } from "@/lib/line";
+import { syncRacesFromCsv, getLocalRaces } from "@/lib/races";
 import type { Race } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 const NOTIFY_MINUTES = [10, 5] as const;
-const SENT_TTL_SECONDS = 60 * 60 * 24 * 7; // 7日
+const SENT_TTL_SECONDS = 60 * 60 * 24 * 7;
 
-function isAuthorized(request: NextRequest): boolean {
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+function isAuthorized(request: Request): boolean {
   const expectedToken = process.env.CRON_API_TOKEN;
 
   if (!expectedToken) {
@@ -26,7 +30,7 @@ function isAuthorized(request: NextRequest): boolean {
   return authHeader === `Bearer ${expectedToken}`;
 }
 
-function buildLineMessage(race: Race, minutesBefore: number, raceStart: Date) {
+function buildMessage(race: Race, minutesBefore: number, raceStart: Date): string {
   const alertLabel =
     minutesBefore === 10 ? "【発走10分前】" : "【発走5分前・最終確認】";
 
@@ -42,17 +46,34 @@ function buildLineMessage(race: Race, minutesBefore: number, raceStart: Date) {
   return lines.join("\n");
 }
 
-export async function GET(request: NextRequest) {
+async function markNotificationSent(key: string): Promise<boolean> {
+  const result = await redis.set(key, "1", {
+    nx: true,
+    ex: SENT_TTL_SECONDS,
+  });
+
+  return result === "OK";
+}
+
+export async function GET(request: Request) {
   try {
     if (!isAuthorized(request)) {
-      return NextResponse.json(
+      return Response.json(
         { ok: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
+    let raceList: Race[] = [];
+
+    try {
+      raceList = await syncRacesFromCsv();
+    } catch (syncError) {
+      console.error("CSV同期失敗。ローカルの races.json を使います。", syncError);
+      raceList = getLocalRaces();
+    }
+
     const now = new Date();
-    const races = getRaces();
 
     const results: Array<{
       raceId: string;
@@ -61,10 +82,9 @@ export async function GET(request: NextRequest) {
       skippedMinutes: number[];
     }> = [];
 
-    for (const race of races) {
+    for (const race of raceList) {
       const raceStart = parseJstDateTime(race.date, race.time);
 
-      // 発走後は処理しない
       if (raceStart.getTime() <= now.getTime()) {
         continue;
       }
@@ -83,14 +103,14 @@ export async function GET(request: NextRequest) {
         matchedMinutes.push(minutesBefore);
 
         const sentKey = `sent:${race.id}:${minutesBefore}`;
-        const isFirstSend = await markNotificationSent(sentKey, SENT_TTL_SECONDS);
+        const isFirstSend = await markNotificationSent(sentKey);
 
         if (!isFirstSend) {
           skippedMinutes.push(minutesBefore);
           continue;
         }
 
-        const message = buildLineMessage(race, minutesBefore, raceStart);
+        const message = buildMessage(race, minutesBefore, raceStart);
         await pushLineMessage(message);
         sentMinutes.push(minutesBefore);
       }
@@ -100,23 +120,24 @@ export async function GET(request: NextRequest) {
           raceId: race.id,
           matchedMinutes,
           sentMinutes,
-          skippedMinutes
+          skippedMinutes,
         });
       }
     }
 
-    return NextResponse.json({
+    return Response.json({
       ok: true,
       now: now.toISOString(),
-      results
+      results,
+      raceCount: raceList.length,
     });
   } catch (error) {
     console.error("notify cron error:", error);
 
-    return NextResponse.json(
+    return Response.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
