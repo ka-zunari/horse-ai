@@ -11,7 +11,7 @@ type Race = {
   course: string;
   raceNumber: string;
   raceName: string;
-  horse: string;
+  horse?: string;
   reason?: string;
 };
 
@@ -131,7 +131,7 @@ export default function Home() {
               <p>開催場: {race.course}</p>
               <p>レース: {race.raceNumber}</p>
               <p>発走時刻: {race.time}</p>
-              <p>本命: ◎ {race.horse}</p>
+              <p>本命: {race.horse ? `◎ ${race.horse}` : "未設定"}</p>
               {race.reason && <p>理由: {race.reason}</p>}
 
               <div

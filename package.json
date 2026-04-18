@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "import:races": "node scripts/import-races.mjs"
   },
   "dependencies": {
     "@upstash/redis": "^1.35.3",
@@ -24,4 +25,5 @@
     "tailwindcss": "^4.2.2",
     "typescript": "6.0.3"
   }
+  
 }

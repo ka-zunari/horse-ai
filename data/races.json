@@ -1,12 +1,30 @@
 [
   {
-    "id": "2026-04-18-nakayama-11r-1",
-    "date": "2026-04-18",
-    "time": "15:50",
+    "id": "2026-04-19-nakayama-11r",
+    "date": "2026-04-19",
+    "time": "15:40",
     "course": "中山",
     "raceNumber": "11R",
-    "raceName": "サンプル重賞",
+    "raceName": "皐月賞",
     "horse": "サンプルホースA",
     "reason": "前走内容と展開想定を評価"
+  },
+  {
+    "id": "2026-04-19-hanshin-12r",
+    "date": "2026-04-19",
+    "time": "16:25",
+    "course": "阪神",
+    "raceNumber": "12R",
+    "raceName": "サンプル特別",
+    "horse": "サンプルホースB",
+    "reason": "距離条件が好転"
+  },
+  {
+    "id": "2026-04-20-tokyo-9r",
+    "date": "2026-04-20",
+    "time": "14:15",
+    "course": "東京",
+    "raceNumber": "9R",
+    "raceName": "テストレース"
   }
 ]

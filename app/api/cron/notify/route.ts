@@ -26,14 +26,17 @@ function isAuthorized(request: NextRequest): boolean {
   return authHeader === `Bearer ${expectedToken}`;
 }
 
-function buildLineMessage(race: Race, minutesBefore: number, raceStart: Date): string {
+function buildLineMessage(race: Race, minutesBefore: number, raceStart: Date) {
+  const alertLabel =
+    minutesBefore === 10 ? "【発走10分前】" : "【発走5分前・最終確認】";
+
   const lines = [
-    `【競馬予想通知】発走${minutesBefore}分前`,
+    `${alertLabel} 競馬通知`,
     `${race.date} ${race.time} 発走`,
     `${race.course} ${race.raceNumber} ${race.raceName}`,
-    `◎ ${race.horse}`,
+    race.horse ? `◎ ${race.horse}` : "予想はまだ未設定です",
     race.reason ? `理由: ${race.reason}` : "",
-    `発走時刻(JST): ${formatJst(raceStart)}`
+    `発走時刻(JST): ${formatJst(raceStart)}`,
   ].filter(Boolean);
 
   return lines.join("\n");

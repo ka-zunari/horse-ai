@@ -1,10 +1,10 @@
 export type Race = {
   id: string;
-  date: string;      // YYYY-MM-DD
-  time: string;      // HH:mm
+  date: string;
+  time: string;
   course: string;
   raceNumber: string;
   raceName: string;
-  horse: string;
+  horse?: string;
   reason?: string;
 };
